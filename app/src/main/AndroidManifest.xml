@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         tools:ignore="AllowBackup">
         <activity
-            android:name=".mvvm.MainActivity"
+            android:name=".mvvm.view.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

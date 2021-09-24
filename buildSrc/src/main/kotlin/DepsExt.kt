@@ -50,6 +50,9 @@ internal val thirdPartyDependencies = listOf(
 internal val fPhoenixCornerEDependencies = listOf(
     Deps.FPhoenixCorneaE.commonUtil,
     Deps.FPhoenixCorneaE.commonToolbar,
+    Deps.FPhoenixCorneaE.jetpackMvvmCompose,
+    Deps.FPhoenixCorneaE.coRetrofit,
+    Deps.FPhoenixCorneaE.progressBanner,
 )
 
 internal val debugDependencies = listOf(

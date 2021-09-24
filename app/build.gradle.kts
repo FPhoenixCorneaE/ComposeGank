@@ -38,6 +38,7 @@ android {
 
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
+        freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.RequiresOptIn"
     }
 
     lint {
@@ -85,10 +86,18 @@ android.applicationVariants.all {
 
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    // Kotlin
     addKotlinDependencies()
+    // AndroidX
     addAndroidXDependencies()
-    implementation(Deps.FPhoenixCorneaE.jetpackMvvmCompose)
+    // FPhoenixCorneaE
+    addFPhoenixCorneaEDependencies()
+    // compose
+    addComposeOfficialDependencies()
+    // Debug
     addDebugDependencies()
+    // Test
     addTestDependencies()
+    // AndroidTest
     addAndroidTestDependencies()
 }
