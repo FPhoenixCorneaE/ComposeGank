@@ -1,6 +1,7 @@
 package com.fphoenixcorneae.gank.compose.mvvm.view
 
 import androidx.activity.viewModels
+import com.fphoenixcorneae.gank.compose.constant.Category
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
 import com.fphoenixcorneae.jetpackmvvm.compose.base.activity.BaseActivity
 
@@ -16,7 +17,8 @@ class MainActivity : BaseActivity() {
         setRealContent {
             HomepageScreen(
                 localContext = getLocalContext(),
-                gankViewModel = mGankViewModel
+                gankViewModel = mGankViewModel,
+                onToolbarClick
             )
         }
     }
@@ -26,6 +28,9 @@ class MainActivity : BaseActivity() {
 
     override fun initData() {
         mGankViewModel.getHomepageBanners()
+        mGankViewModel.getCategories(Category.Article.name)
+        mGankViewModel.getCategories(Category.GanHuo.name)
+        mGankViewModel.getCategories(Category.Girl.name)
     }
 
     override fun toolbarVisible() = false

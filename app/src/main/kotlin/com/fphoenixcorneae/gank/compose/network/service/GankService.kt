@@ -1,7 +1,9 @@
 package com.fphoenixcorneae.gank.compose.network.service
 
+import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryBean
 import com.fphoenixcorneae.gank.compose.mvvm.model.HomepageBannersBean
 import retrofit2.http.GET
+import retrofit2.http.Path
 
 /**
  * @desc：GankService
@@ -19,4 +21,10 @@ interface GankService {
      */
     @GET("/api/v2/banners")
     suspend fun getHomepageBanners(): HomepageBannersBean
+
+    /**
+     * 获取分类
+     */
+    @GET("/api/v2/categories/{categoryType}")
+    suspend fun getCategories(@Path("categoryType") categoryType: String): CategoryBean
 }
