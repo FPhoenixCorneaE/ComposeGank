@@ -10,12 +10,7 @@ import com.google.gson.annotations.SerializedName
  * @date：2021/09/23 15:33
  */
 @Keep
-data class HomepageBannersBean(
-    @SerializedName("data")
-    val `data`: List<Data?>? = null,
-    @SerializedName("status")
-    val status: Int? = null
-) {
+class HomepageBannersBean : ArrayList<HomepageBannersBean.Data>() {
     @Keep
     data class Data(
         @SerializedName("image")

@@ -9,12 +9,7 @@ import androidx.annotation.Keep
  * @date：2021/09/24 17:27
  */
 @Keep
-data class CategoryBean(
-    @SerializedName("data")
-    val `data`: List<Data?>? = null,
-    @SerializedName("status")
-    val status: Int? = null
-) {
+class CategoryBean : ArrayList<CategoryBean.Data>() {
     @Keep
     data class Data(
         @SerializedName("coverImageUrl")

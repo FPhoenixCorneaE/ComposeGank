@@ -2,7 +2,7 @@ package com.fphoenixcorneae.gank.compose.mvvm.viewmodel
 
 import com.fphoenixcorneae.ext.loge
 import com.fphoenixcorneae.gank.compose.constant.Category
-import com.fphoenixcorneae.gank.compose.ext.launch
+import com.fphoenixcorneae.gank.compose.ext.request
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryBean
 import com.fphoenixcorneae.gank.compose.mvvm.model.HomepageBannersBean
 import com.fphoenixcorneae.gank.compose.network.RetrofitFactory
@@ -38,14 +38,12 @@ class GankViewModel : BaseViewModel() {
      * 获取首页 banner 轮播
      */
     fun getHomepageBanners() {
-        launch({
+        request({
             mGankService.getHomepageBanners()
         }, {
-            it.data?.let {
-                _homepageBanners.value = it.toMutableList()
-            }
+            _homepageBanners.value = it.toMutableList()
         }, {
-            "getHomepageBanners: $it".loge()
+            "getHomepageBanners: errCode: ${it.errCode} errorMsg: ${it.errorMsg}".loge()
         })
     }
 
@@ -53,18 +51,16 @@ class GankViewModel : BaseViewModel() {
      * 获取分类
      */
     fun getCategories(categoryType: String) {
-        launch({
+        request({
             mGankService.getCategories(categoryType = categoryType)
         }, {
-            it.data?.let {
-                when (categoryType) {
-                    Category.Article.name -> _articleCategories.value = it.toMutableList()
-                    Category.GanHuo.name -> _ganHuoCategories.value = it.toMutableList()
-                    Category.Girl.name -> _girlCategories.value = it.toMutableList()
-                }
+            when (categoryType) {
+                Category.Article.name -> _articleCategories.value = it.toMutableList()
+                Category.GanHuo.name -> _ganHuoCategories.value = it.toMutableList()
+                Category.Girl.name -> _girlCategories.value = it.toMutableList()
             }
         }, {
-            "getCategories: $it".loge()
+            "getCategories: errCode: ${it.errCode} errorMsg: ${it.errorMsg}".loge()
         })
     }
 }
