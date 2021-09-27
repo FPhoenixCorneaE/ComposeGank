@@ -1,5 +1,6 @@
 package com.fphoenixcorneae.gank.compose.mvvm.viewmodel
 
+import com.fphoenixcorneae.coretrofit.exception.Error
 import com.fphoenixcorneae.ext.loge
 import com.fphoenixcorneae.gank.compose.constant.Category
 import com.fphoenixcorneae.gank.compose.ext.request
@@ -9,6 +10,7 @@ import com.fphoenixcorneae.gank.compose.mvvm.model.HomepageBannersBean
 import com.fphoenixcorneae.gank.compose.network.RetrofitFactory
 import com.fphoenixcorneae.gank.compose.network.service.GankService
 import com.fphoenixcorneae.jetpackmvvm.compose.base.viewmodel.BaseViewModel
+import com.fphoenixcorneae.jetpackmvvm.compose.uistate.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -22,6 +24,10 @@ class GankViewModel : BaseViewModel() {
     private val mGankService by lazy {
         RetrofitFactory.getApi(GankService::class.java, GankService.BASE_URL)
     }
+
+    /** UiState */
+    private val _uiState by lazy { MutableStateFlow<UiState>(UiState.ShowLoading()) }
+    val uiState = _uiState.asStateFlow()
 
     /** 首页 banner 轮播 */
     private val _homepageBanners = MutableStateFlow(mutableListOf<HomepageBannersBean.Data?>())
@@ -64,15 +70,21 @@ class GankViewModel : BaseViewModel() {
                 Category.GanHuo.name -> _ganHuoCategories.value = it.toMutableList()
                 Category.Girl.name -> _girlCategories.value = it.toMutableList()
             }
+            _uiState.value = UiState.ShowContent
         }, {
             "getCategories: errCode: ${it.errCode} errorMsg: ${it.errorMsg}".loge()
+            if (it.errCode == Error.NETWORK_ERROR.getCode() || it.errCode == Error.TIMEOUT_ERROR.getCode()) {
+                _uiState.value = UiState.ShowNoNetwork(noNetworkMsg = it.errorMsg)
+            } else {
+                _uiState.value = UiState.ShowError(errorMsg = it.errorMsg)
+            }
         })
     }
 
     /**
      * 获取分类列表数据
      */
-    fun getCategoryList(category: String, type: String, page: Int, count: Int = 10) {
+    fun getCategoryList(category: String, type: String, page: Int = 1, count: Int = 10) {
         request({
             mGankService.getCategoryList(category = category, type = type, page = page, count = count)
         }, {

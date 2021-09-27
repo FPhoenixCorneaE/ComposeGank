@@ -1,16 +1,13 @@
 package com.fphoenixcorneae.gank.compose.mvvm.view
 
 import android.content.Context
-import android.graphics.drawable.GradientDrawable
+import android.content.res.Configuration
 import android.view.View
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Card
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -19,18 +16,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
-import coil.transform.RoundedCornersTransformation
 import com.fphoenixcorneae.bannerlayout.annotation.TipsProgressesSiteMode
 import com.fphoenixcorneae.bannerlayout.annotation.TipsTitleSiteMode
 import com.fphoenixcorneae.bannerlayout.imagemanager.GlideImageManager
@@ -39,11 +38,15 @@ import com.fphoenixcorneae.bannerlayout.widget.BannerLayout
 import com.fphoenixcorneae.bannerlayout.widget.ProgressDrawable
 import com.fphoenixcorneae.ext.dp2px
 import com.fphoenixcorneae.ext.isNotNullOrEmpty
+import com.fphoenixcorneae.ext.spToPx
 import com.fphoenixcorneae.ext.view.gone
 import com.fphoenixcorneae.gank.compose.R
 import com.fphoenixcorneae.gank.compose.constant.Category
+import com.fphoenixcorneae.gank.compose.ext.graySurface
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryBean
+import com.fphoenixcorneae.gank.compose.mvvm.view.activity.CategoryListActivity
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
+import com.fphoenixcorneae.jetpackmvvm.compose.theme.typography
 import com.fphoenixcorneae.jetpackmvvm.compose.widget.Toolbar
 
 /**
@@ -63,6 +66,7 @@ fun HomepageScreen(
             // 设置标题栏属性
             leftImageButton.gone()
             centerText = localContext.getString(R.string.app_name)
+            centerTextSize = spToPx(20f)
         }
 
         Column(
@@ -90,7 +94,7 @@ fun HomepageScreen(
             }
 
             // 分类
-            Categories(gankViewModel = gankViewModel)
+            Categories(context = localContext, gankViewModel = gankViewModel)
         }
     }
 }
@@ -165,24 +169,27 @@ fun HomepageBanner(
  * 分类
  */
 @Composable
-fun Categories(gankViewModel: GankViewModel) {
+fun Categories(
+    context: Context,
+    gankViewModel: GankViewModel
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
     ) {
         // 文章
-        CategoryTitle(Category.Article.type)
+        CategoryTitle(Category.Article.name)
         val article = gankViewModel.articleCategories.collectAsState()
-        CategoryItem(categoryDatas = article.value)
+        CategoryItem(context = context, categoryDatas = article.value, category = Category.Article)
         // 干货
-        CategoryTitle(Category.GanHuo.type)
+        CategoryTitle(Category.GanHuo.name)
         val ganHuo = gankViewModel.ganHuoCategories.collectAsState()
-        CategoryItem(categoryDatas = ganHuo.value)
+        CategoryItem(context = context, categoryDatas = ganHuo.value, category = Category.GanHuo)
         // 妹纸
-        CategoryTitle(Category.Girl.type)
+        CategoryTitle(Category.Girl.name)
         val girl = gankViewModel.girlCategories.collectAsState()
-        CategoryItem(categoryDatas = girl.value)
+        CategoryItem(context = context, categoryDatas = girl.value, category = Category.Girl)
         Spacer(modifier = Modifier.height(20.dp))
     }
 }
@@ -194,15 +201,9 @@ fun Categories(gankViewModel: GankViewModel) {
 private fun CategoryTitle(title: String) {
     Text(
         text = title,
-        color = Color.Black,
-        fontSize = 16.sp,
-        fontWeight = FontWeight.Bold,
-        fontFamily = FontFamily.Serif,
+        style = typography.h5.copy(fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Cursive),
         modifier = Modifier
-            .padding(start = 16.dp, top = 16.dp, end = 16.dp)
-            .fillMaxWidth()
-            .background(color = Color(0x50888888), shape = MaterialTheme.shapes.medium)
-            .padding(start = 8.dp, top = 4.dp, bottom = 4.dp)
+            .padding(start = 16.dp, top = 20.dp)
     )
 }
 
@@ -211,7 +212,11 @@ private fun CategoryTitle(title: String) {
  */
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun CategoryItem(categoryDatas: List<CategoryBean.Data?>?) {
+fun CategoryItem(
+    context: Context,
+    categoryDatas: List<CategoryBean.Data?>?,
+    category: Category? = null
+) {
     if (categoryDatas.isNotNullOrEmpty()) {
         LazyRow(
             modifier = Modifier.wrapContentWidth(),
@@ -223,31 +228,36 @@ fun CategoryItem(categoryDatas: List<CategoryBean.Data?>?) {
                     modifier = Modifier,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val painter = rememberImagePainter(
-                        data = item?.coverImageUrl,
-                        builder = {
-                            crossfade(true)
-                            placeholder(GradientDrawable().apply {
-                                setColor(Color(0x50888888).toArgb())
-                                cornerRadius = LocalDensity.current.run { 8.dp.toPx() }
-                            })
-                            transformations(
-                                RoundedCornersTransformation(
-                                    topLeft = LocalDensity.current.run { 8.dp.toPx() },
-                                    topRight = LocalDensity.current.run { 8.dp.toPx() },
-                                    bottomLeft = LocalDensity.current.run { 8.dp.toPx() },
-                                    bottomRight = LocalDensity.current.run { 8.dp.toPx() },
-                                )
-                            )
-                        }
-                    )
-                    Image(
-                        painter = painter,
-                        contentDescription = item?.desc,
+                    val cardColor = if (isSystemInDarkTheme()) graySurface else MaterialTheme.colors.background
+                    Card(
+                        elevation = 8.dp,
+                        backgroundColor = cardColor,
                         modifier = Modifier
-                            .width(200.dp)
-                            .height(120.dp)
-                    )
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable(onClick = {
+                                // 跳转分类列表
+                                CategoryListActivity.start(
+                                    context = context,
+                                    category = category?.name,
+                                    type = item?.type
+                                )
+                            })
+                    ) {
+                        val painter = rememberImagePainter(
+                            data = item?.coverImageUrl,
+                            builder = {
+                                crossfade(true)
+                            }
+                        )
+                        Image(
+                            painter = painter,
+                            contentDescription = item?.desc,
+                            modifier = Modifier
+                                .width(200.dp)
+                                .height(120.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
 
                     item?.desc?.let {
                         Text(
@@ -263,5 +273,35 @@ fun CategoryItem(categoryDatas: List<CategoryBean.Data?>?) {
                 }
             }
         }
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun PreviewCategories() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+    ) {
+        // 文章
+        CategoryTitle(title = "Article")
+        CategoryItem(
+            context = LocalContext.current,
+            categoryDatas = mutableListOf(CategoryBean.Data())
+        )
+        // 干货
+        CategoryTitle(title = "GanHuo")
+        CategoryItem(
+            context = LocalContext.current,
+            categoryDatas = mutableListOf(CategoryBean.Data())
+        )
+        // 妹纸
+        CategoryTitle(title = "Girl")
+        CategoryItem(
+            context = LocalContext.current,
+            categoryDatas = mutableListOf(CategoryBean.Data())
+        )
+        Spacer(modifier = Modifier.height(20.dp))
     }
 }
