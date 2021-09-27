@@ -1,7 +1,8 @@
-package com.fphoenixcorneae.gank.compose.mvvm.view
+package com.fphoenixcorneae.gank.compose.mvvm.view.activity
 
 import androidx.activity.viewModels
 import com.fphoenixcorneae.gank.compose.constant.Category
+import com.fphoenixcorneae.gank.compose.mvvm.view.HomepageScreen
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
 import com.fphoenixcorneae.jetpackmvvm.compose.base.activity.BaseActivity
 

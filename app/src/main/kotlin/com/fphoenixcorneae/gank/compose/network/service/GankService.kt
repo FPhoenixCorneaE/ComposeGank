@@ -1,6 +1,7 @@
 package com.fphoenixcorneae.gank.compose.network.service
 
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryBean
+import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryListBean
 import com.fphoenixcorneae.gank.compose.mvvm.model.HomepageBannersBean
 import com.fphoenixcorneae.gank.compose.network.ApiResponse
 import retrofit2.http.GET
@@ -29,8 +30,19 @@ interface GankService {
     /**
      * 获取分类
      */
-    @GET("/api/v2/categories/{categoryType}")
+    @GET("/api/v2/categories/{category}")
     suspend fun getCategories(
-        @Path("categoryType") categoryType: String
+        @Path("category") category: String
     ): ApiResponse<CategoryBean>
+
+    /**
+     * 获取分类列表数据
+     */
+    @GET("/api/v2/data/category/{category}/type/{type}/page/{page}/count/{count}")
+    suspend fun getCategoryList(
+        @Path("category") category: String,
+        @Path("type") type: String,
+        @Path("page") page: Int,
+        @Path("count") count: Int,
+    ): ApiResponse<CategoryListBean>
 }

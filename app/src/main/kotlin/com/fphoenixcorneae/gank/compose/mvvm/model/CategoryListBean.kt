@@ -9,18 +9,7 @@ import androidx.annotation.Keep
  * @date：2021/09/26 16:19
  */
 @Keep
-data class CategoryListBean(
-    @SerializedName("data")
-    val `data`: List<Data?>? = null,
-    @SerializedName("page")
-    val page: Int? = null,
-    @SerializedName("page_count")
-    val pageCount: Int? = null,
-    @SerializedName("status")
-    val status: Int? = null,
-    @SerializedName("total_counts")
-    val totalCounts: Int? = null
-) {
+class CategoryListBean : ArrayList<CategoryListBean.Data>() {
     @Keep
     data class Data(
         @SerializedName("author")

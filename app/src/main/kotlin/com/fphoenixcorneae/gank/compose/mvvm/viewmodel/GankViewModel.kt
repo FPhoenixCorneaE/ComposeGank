@@ -4,6 +4,7 @@ import com.fphoenixcorneae.ext.loge
 import com.fphoenixcorneae.gank.compose.constant.Category
 import com.fphoenixcorneae.gank.compose.ext.request
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryBean
+import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryListBean
 import com.fphoenixcorneae.gank.compose.mvvm.model.HomepageBannersBean
 import com.fphoenixcorneae.gank.compose.network.RetrofitFactory
 import com.fphoenixcorneae.gank.compose.network.service.GankService
@@ -34,6 +35,10 @@ class GankViewModel : BaseViewModel() {
     private val _girlCategories = MutableStateFlow(mutableListOf<CategoryBean.Data?>())
     val girlCategories = _girlCategories.asStateFlow()
 
+    /** 分类列表数据 */
+    private val _categoryList = MutableStateFlow(mutableListOf<CategoryListBean.Data?>())
+    val categoryList = _categoryList.asStateFlow()
+
     /**
      * 获取首页 banner 轮播
      */
@@ -50,17 +55,30 @@ class GankViewModel : BaseViewModel() {
     /**
      * 获取分类
      */
-    fun getCategories(categoryType: String) {
+    fun getCategories(category: String) {
         request({
-            mGankService.getCategories(categoryType = categoryType)
+            mGankService.getCategories(category = category)
         }, {
-            when (categoryType) {
+            when (category) {
                 Category.Article.name -> _articleCategories.value = it.toMutableList()
                 Category.GanHuo.name -> _ganHuoCategories.value = it.toMutableList()
                 Category.Girl.name -> _girlCategories.value = it.toMutableList()
             }
         }, {
             "getCategories: errCode: ${it.errCode} errorMsg: ${it.errorMsg}".loge()
+        })
+    }
+
+    /**
+     * 获取分类列表数据
+     */
+    fun getCategoryList(category: String, type: String, page: Int, count: Int = 10) {
+        request({
+            mGankService.getCategoryList(category = category, type = type, page = page, count = count)
+        }, {
+            _categoryList.value = it.toMutableList()
+        }, {
+            "getCategoryList: errCode: ${it.errCode} errorMsg: ${it.errorMsg}".loge()
         })
     }
 }
