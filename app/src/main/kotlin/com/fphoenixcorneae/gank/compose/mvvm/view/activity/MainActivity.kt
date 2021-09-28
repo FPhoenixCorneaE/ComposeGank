@@ -20,9 +20,9 @@ class MainActivity : BaseActivity() {
     override fun initView() {
         setRealContent {
             HomepageScreen(
-                localContext = getLocalContext(),
+                context = getLocalContext(),
                 gankViewModel = mGankViewModel,
-                onToolbarClick
+                onToolbarClick = onToolbarClick
             )
         }
     }

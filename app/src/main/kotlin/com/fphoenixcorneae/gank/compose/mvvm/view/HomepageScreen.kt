@@ -54,7 +54,7 @@ import com.fphoenixcorneae.jetpackmvvm.compose.widget.Toolbar
  */
 @Composable
 fun HomepageScreen(
-    localContext: Context,
+    context: Context,
     gankViewModel: GankViewModel,
     onToolbarClick: ((View, Int, CharSequence?) -> Unit)?
 ) {
@@ -65,8 +65,8 @@ fun HomepageScreen(
         Toolbar(onToolbarClick = onToolbarClick) {
             // 设置标题栏属性
             leftImageButton.gone()
-            centerText = localContext.getString(R.string.app_name)
-            centerTextSize = spToPx(20f)
+            centerText = context.getString(R.string.app_name)
+            centerTextSize = 20f.spToPx()
         }
 
         Column(
@@ -75,26 +75,10 @@ fun HomepageScreen(
                 .wrapContentHeight()
                 .verticalScroll(state = rememberScrollState())
         ) {
-            val homepageBanners = gankViewModel.homepageBanners.collectAsState()
-            if (homepageBanners.value.isNotEmpty()) {
-                val imageList = mutableListOf<BannerModelCallBack<*>>()
-                for (data in homepageBanners.value) {
-                    if (data is BannerModelCallBack<*>) {
-                        imageList.add(data)
-                    }
-                }
-                // 首页 banner 轮播
-                HomepageBanner(
-                    context = localContext,
-                    imageList = imageList,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                )
-            }
-
+            // 首页 banner 轮播
+            HomepageBanner(context = context, gankViewModel = gankViewModel)
             // 分类
-            Categories(context = localContext, gankViewModel = gankViewModel)
+            Categories(context = context, gankViewModel = gankViewModel)
         }
     }
 }
@@ -103,11 +87,20 @@ fun HomepageScreen(
  * 首页 banner 轮播
  */
 @Composable
-fun HomepageBanner(
+private fun HomepageBanner(
     context: Context,
-    imageList: List<BannerModelCallBack<*>>?,
-    modifier: Modifier = Modifier
+    gankViewModel: GankViewModel
 ) {
+    val homepageBanners = gankViewModel.homepageBanners.collectAsState()
+    if (homepageBanners.value.isEmpty()) {
+        return
+    }
+    val bannerImages = mutableListOf<BannerModelCallBack<*>>()
+    for (data in homepageBanners.value) {
+        if (data is BannerModelCallBack<*>) {
+            bannerImages.add(data)
+        }
+    }
     Card(
         modifier = Modifier
             .padding(start = 16.dp, top = 12.dp, end = 16.dp)
@@ -153,12 +146,14 @@ fun HomepageBanner(
                 setTitleBackgroundColor(0x50000000)
                 setTitleSite(TipsTitleSiteMode.BOTTOM)
                 // 初始化数据,须在最后
-                initListResources(imageList)
+                initListResources(bannerImages)
             }
         }
         AndroidView(
             { bannerLayout },
-            modifier = modifier
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
         ) {
             it.startRotation(true)
         }
@@ -169,7 +164,7 @@ fun HomepageBanner(
  * 分类
  */
 @Composable
-fun Categories(
+private fun Categories(
     context: Context,
     gankViewModel: GankViewModel
 ) {
@@ -212,7 +207,7 @@ private fun CategoryTitle(title: String) {
  */
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun CategoryItem(
+private fun CategoryItem(
     context: Context,
     categoryDatas: List<CategoryBean.Data?>?,
     category: Category? = null
@@ -245,9 +240,7 @@ fun CategoryItem(
                     ) {
                         val painter = rememberImagePainter(
                             data = item?.coverImageUrl,
-                            builder = {
-                                crossfade(true)
-                            }
+                            builder = { crossfade(true) }
                         )
                         Image(
                             painter = painter,

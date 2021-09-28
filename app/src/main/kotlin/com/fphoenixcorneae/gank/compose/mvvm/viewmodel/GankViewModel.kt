@@ -89,8 +89,14 @@ class GankViewModel : BaseViewModel() {
             mGankService.getCategoryList(category = category, type = type, page = page, count = count)
         }, {
             _categoryList.value = it.toMutableList()
+            _uiState.value = UiState.ShowContent
         }, {
             "getCategoryList: errCode: ${it.errCode} errorMsg: ${it.errorMsg}".loge()
+            if (it.errCode == Error.NETWORK_ERROR.getCode() || it.errCode == Error.TIMEOUT_ERROR.getCode()) {
+                _uiState.value = UiState.ShowNoNetwork(noNetworkMsg = it.errorMsg)
+            } else {
+                _uiState.value = UiState.ShowError(errorMsg = it.errorMsg)
+            }
         })
     }
 }
