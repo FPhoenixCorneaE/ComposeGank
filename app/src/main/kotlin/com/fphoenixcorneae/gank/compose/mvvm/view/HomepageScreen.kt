@@ -40,7 +40,7 @@ import com.fphoenixcorneae.bannerlayout.widget.ProgressDrawable
 import com.fphoenixcorneae.ext.dp2px
 import com.fphoenixcorneae.ext.isNotNullOrEmpty
 import com.fphoenixcorneae.gank.compose.constant.Category
-import com.fphoenixcorneae.gank.compose.ext.graySurface
+import com.fphoenixcorneae.gank.compose.ext.gray0x2a2a2a
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryBean
 import com.fphoenixcorneae.gank.compose.mvvm.view.activity.CategoryListActivity
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
@@ -206,7 +206,7 @@ private fun CategoryItem(
                     modifier = Modifier,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    val cardColor = if (isSystemInDarkTheme()) graySurface else MaterialTheme.colors.background
+                    val cardColor = if (isSystemInDarkTheme()) gray0x2a2a2a else MaterialTheme.colors.background
                     val coroutineScope = rememberCoroutineScope()
                     Card(
                         elevation = 8.dp,

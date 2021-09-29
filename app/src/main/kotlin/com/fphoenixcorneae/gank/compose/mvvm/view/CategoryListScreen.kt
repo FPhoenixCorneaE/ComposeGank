@@ -5,7 +5,9 @@ import android.graphics.drawable.ColorDrawable
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,6 +25,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -37,11 +41,10 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemsIndexed
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
-import com.fphoenixcorneae.ext.isNotNull
 import com.fphoenixcorneae.ext.isNotNullOrEmpty
 import com.fphoenixcorneae.ext.isNull
 import com.fphoenixcorneae.gank.compose.R
-import com.fphoenixcorneae.gank.compose.ext.gray0x666666
+import com.fphoenixcorneae.gank.compose.ext.*
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryListBean
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
 import com.fphoenixcorneae.jetpackmvvm.compose.theme.typography
@@ -135,6 +138,22 @@ private fun AuthorImage() {
             .padding(16.dp)
             .size(50.dp)
             .clip(CircleShape)
+            .border(
+                shape = CircleShape,
+                border = BorderStroke(
+                    width = 3.dp,
+                    brush = Brush.linearGradient(
+                        colors = listOf(
+                            blue0x5851db,
+                            purple0x833ab4,
+                            orange0xf56040,
+                            yellow0xfcaf45
+                        ),
+                        start = Offset(0f, 0f),
+                        end = Offset(100f, 100f)
+                    )
+                )
+            )
     )
 }
 
@@ -173,24 +192,28 @@ private fun AuthorNameAndPublishedTime(
 private fun Images(
     images: List<String?>?
 ) {
-    if (images.isNotNullOrEmpty() && images?.getOrNull(0).isNotNull()) {
-        val painter = rememberImagePainter(
-            data = images?.getOrNull(0),
-            builder = {
-                crossfade(true)
-                error(ColorDrawable(ColorUtil.randomColor))
+    if (images.isNotNullOrEmpty()) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            for (i in images!!.indices) {
+                val painter = rememberImagePainter(
+                    data = images[i],
+                    builder = {
+                        crossfade(true)
+                        error(ColorDrawable(ColorUtil.randomColor))
+                    }
+                )
+                Image(
+                    painter = painter,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
             }
-        )
-        Image(
-            painter = painter,
-            contentDescription = null,
-            modifier = Modifier
-                .padding(top = 8.dp)
-                .fillMaxWidth()
-                .height(150.dp)
-                .clip(RoundedCornerShape(8.dp)),
-            contentScale = ContentScale.Crop
-        )
+        }
     }
 }
 

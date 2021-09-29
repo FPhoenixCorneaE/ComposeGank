@@ -3,14 +3,11 @@ package com.fphoenixcorneae.gank.compose.mvvm.view.activity
 import android.content.Context
 import android.content.Intent
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.fphoenixcorneae.ext.spToPx
 import com.fphoenixcorneae.gank.compose.constant.Category
 import com.fphoenixcorneae.gank.compose.mvvm.view.CategoryListScreen
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
 import com.fphoenixcorneae.jetpackmvvm.compose.base.activity.BaseActivity
-import com.fphoenixcorneae.jetpackmvvm.compose.uistate.UiState
-import kotlinx.coroutines.flow.collect
 
 /**
  * @desc：分类列表
@@ -31,7 +28,7 @@ class CategoryListActivity : BaseActivity() {
             CategoryListScreen(context = getLocalContext())
         }
 
-        onToolbarUpdate={
+        onToolbarUpdate = {
             // 设置标题栏属性
             centerText = mType
             centerTextSize = 20f.spToPx()
@@ -39,17 +36,6 @@ class CategoryListActivity : BaseActivity() {
     }
 
     override fun initListener() {
-        lifecycleScope.launchWhenResumed {
-            mGankViewModel.uiState.collect {
-                when (it) {
-                    is UiState.ShowError -> uiStateViewModel.showEmpty(it.errorMsg)
-                    is UiState.ShowLoading -> uiStateViewModel.showLoading(it.loadingMsg)
-                    is UiState.ShowEmpty -> uiStateViewModel.showEmpty(it.emptyMsg)
-                    is UiState.ShowNoNetwork -> uiStateViewModel.showNoNetwork(it.imageData, it.noNetworkMsg)
-                    else -> uiStateViewModel.showContent()
-                }
-            }
-        }
     }
 
     override fun initData() {

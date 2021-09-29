@@ -16,7 +16,7 @@ import com.fphoenixcorneae.gank.compose.network.RetrofitFactory
 import com.fphoenixcorneae.gank.compose.network.service.GankService
 import com.fphoenixcorneae.gank.compose.paging.CategoryListPagingSource
 import com.fphoenixcorneae.jetpackmvvm.compose.base.viewmodel.BaseViewModel
-import com.fphoenixcorneae.jetpackmvvm.compose.uistate.UiState
+import com.fphoenixcorneae.jetpackmvvm.ext.uiStateViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,10 +33,6 @@ class GankViewModel : BaseViewModel() {
     private val mGankService by lazy {
         RetrofitFactory.getApi(GankService::class.java, GankService.BASE_URL)
     }
-
-    /** UiState */
-    private val _uiState by lazy { MutableStateFlow<UiState>(UiState.ShowLoading()) }
-    val uiState = _uiState.asStateFlow()
 
     /** 首页 banner 轮播 */
     private val _homepageBanners = MutableStateFlow(mutableListOf<HomepageBannersBean.Data?>())
@@ -59,6 +55,7 @@ class GankViewModel : BaseViewModel() {
      * 获取首页 banner 轮播
      */
     fun getHomepageBanners() {
+        uiStateViewModel.showLoading()
         request({
             mGankService.getHomepageBanners()
         }, {
@@ -80,13 +77,13 @@ class GankViewModel : BaseViewModel() {
                 Category.GanHuo.name -> _ganHuoCategories.value = it.toMutableList()
                 Category.Girl.name -> _girlCategories.value = it.toMutableList()
             }
-            _uiState.value = UiState.ShowContent
+            uiStateViewModel.showContent()
         }, {
-            "getCategories: errCode: ${it.errCode} errorMsg: ${it.errorMsg}".loge()
+            "getCategories($category): errCode: ${it.errCode} errorMsg: ${it.errorMsg}".loge()
             if (it.errCode == Error.NETWORK_ERROR.getCode() || it.errCode == Error.TIMEOUT_ERROR.getCode()) {
-                _uiState.value = UiState.ShowNoNetwork(noNetworkMsg = it.errorMsg)
+                uiStateViewModel.showNoNetwork(noNetworkMsg = it.errorMsg)
             } else {
-                _uiState.value = UiState.ShowError(errorMsg = it.errorMsg)
+                uiStateViewModel.showError(errorMsg = it.errorMsg)
             }
         })
     }
@@ -96,11 +93,26 @@ class GankViewModel : BaseViewModel() {
      */
     fun getCategoryList(category: String, type: String, count: Int = 10) {
         viewModelScope.launch {
-            delay(1_500)
-            _uiState.value = UiState.ShowContent
+            delay(200)
+            uiStateViewModel.showLoading()
         }
         _categoryList = Pager(PagingConfig(pageSize = count)) {
-            CategoryListPagingSource(gankService = mGankService, category = category, type = type, count = count)
+            CategoryListPagingSource(
+                gankService = mGankService,
+                category = category,
+                type = type,
+                count = count,
+                onSuccess = {
+                    viewModelScope.launch { uiStateViewModel.showContent() }
+                },
+                onEmpty = {
+                    viewModelScope.launch { uiStateViewModel.showEmpty() }
+                },
+                onError = {
+                    it.toString().loge()
+                    viewModelScope.launch { uiStateViewModel.showError() }
+                }
+            )
         }.flow.cachedIn(viewModelScope)
     }
 }
