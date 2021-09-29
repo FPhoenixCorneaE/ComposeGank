@@ -2,6 +2,9 @@ package com.fphoenixcorneae.gank.compose.mvvm.view.activity
 
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.fphoenixcorneae.ext.spToPx
+import com.fphoenixcorneae.ext.view.gone
+import com.fphoenixcorneae.gank.compose.R
 import com.fphoenixcorneae.gank.compose.constant.Category
 import com.fphoenixcorneae.gank.compose.mvvm.view.HomepageScreen
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
@@ -19,11 +22,13 @@ class MainActivity : BaseActivity() {
 
     override fun initView() {
         setRealContent {
-            HomepageScreen(
-                context = getLocalContext(),
-                gankViewModel = mGankViewModel,
-                onToolbarClick = onToolbarClick
-            )
+            HomepageScreen(context = getLocalContext())
+        }
+
+        onToolbarUpdate = {
+            leftImageButton.gone()
+            centerText = context.getString(R.string.app_name)
+            centerTextSize = 20f.spToPx()
         }
     }
 
@@ -47,6 +52,4 @@ class MainActivity : BaseActivity() {
         mGankViewModel.getCategories(Category.GanHuo.name)
         mGankViewModel.getCategories(Category.Girl.name)
     }
-
-    override fun toolbarVisible() = false
 }

@@ -1,5 +1,10 @@
 package com.fphoenixcorneae.gank.compose.mvvm.viewmodel
 
+import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.fphoenixcorneae.coretrofit.exception.Error
 import com.fphoenixcorneae.ext.loge
 import com.fphoenixcorneae.gank.compose.constant.Category
@@ -9,10 +14,14 @@ import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryListBean
 import com.fphoenixcorneae.gank.compose.mvvm.model.HomepageBannersBean
 import com.fphoenixcorneae.gank.compose.network.RetrofitFactory
 import com.fphoenixcorneae.gank.compose.network.service.GankService
+import com.fphoenixcorneae.gank.compose.paging.CategoryListPagingSource
 import com.fphoenixcorneae.jetpackmvvm.compose.base.viewmodel.BaseViewModel
 import com.fphoenixcorneae.jetpackmvvm.compose.uistate.UiState
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /**
  * @desc：GankViewModel
@@ -42,8 +51,9 @@ class GankViewModel : BaseViewModel() {
     val girlCategories = _girlCategories.asStateFlow()
 
     /** 分类列表数据 */
-    private val _categoryList = MutableStateFlow(mutableListOf<CategoryListBean.Data?>())
-    val categoryList = _categoryList.asStateFlow()
+    private var _categoryList: Flow<PagingData<CategoryListBean.Data>>? = null
+    val categoryList
+        get() = _categoryList
 
     /**
      * 获取首页 banner 轮播
@@ -84,19 +94,13 @@ class GankViewModel : BaseViewModel() {
     /**
      * 获取分类列表数据
      */
-    fun getCategoryList(category: String, type: String, page: Int = 1, count: Int = 10) {
-        request({
-            mGankService.getCategoryList(category = category, type = type, page = page, count = count)
-        }, {
-            _categoryList.value = it.toMutableList()
+    fun getCategoryList(category: String, type: String, count: Int = 10) {
+        viewModelScope.launch {
+            delay(1_500)
             _uiState.value = UiState.ShowContent
-        }, {
-            "getCategoryList: errCode: ${it.errCode} errorMsg: ${it.errorMsg}".loge()
-            if (it.errCode == Error.NETWORK_ERROR.getCode() || it.errCode == Error.TIMEOUT_ERROR.getCode()) {
-                _uiState.value = UiState.ShowNoNetwork(noNetworkMsg = it.errorMsg)
-            } else {
-                _uiState.value = UiState.ShowError(errorMsg = it.errorMsg)
-            }
-        })
+        }
+        _categoryList = Pager(PagingConfig(pageSize = count)) {
+            CategoryListPagingSource(gankService = mGankService, category = category, type = type, count = count)
+        }.flow.cachedIn(viewModelScope)
     }
 }

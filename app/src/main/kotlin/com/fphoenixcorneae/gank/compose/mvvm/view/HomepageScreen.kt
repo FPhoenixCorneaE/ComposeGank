@@ -2,7 +2,6 @@ package com.fphoenixcorneae.gank.compose.mvvm.view
 
 import android.content.Context
 import android.content.res.Configuration
-import android.view.View
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -14,6 +13,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.fphoenixcorneae.bannerlayout.annotation.TipsProgressesSiteMode
@@ -38,48 +39,30 @@ import com.fphoenixcorneae.bannerlayout.widget.BannerLayout
 import com.fphoenixcorneae.bannerlayout.widget.ProgressDrawable
 import com.fphoenixcorneae.ext.dp2px
 import com.fphoenixcorneae.ext.isNotNullOrEmpty
-import com.fphoenixcorneae.ext.spToPx
-import com.fphoenixcorneae.ext.view.gone
-import com.fphoenixcorneae.gank.compose.R
 import com.fphoenixcorneae.gank.compose.constant.Category
 import com.fphoenixcorneae.gank.compose.ext.graySurface
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryBean
 import com.fphoenixcorneae.gank.compose.mvvm.view.activity.CategoryListActivity
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
 import com.fphoenixcorneae.jetpackmvvm.compose.theme.typography
-import com.fphoenixcorneae.jetpackmvvm.compose.widget.Toolbar
+import kotlinx.coroutines.launch
 
 /**
  * 首页
  */
 @Composable
 fun HomepageScreen(
-    context: Context,
-    gankViewModel: GankViewModel,
-    onToolbarClick: ((View, Int, CharSequence?) -> Unit)?
+    context: Context
 ) {
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(state = rememberScrollState())
     ) {
-        // 标题栏
-        Toolbar(onToolbarClick = onToolbarClick) {
-            // 设置标题栏属性
-            leftImageButton.gone()
-            centerText = context.getString(R.string.app_name)
-            centerTextSize = 20f.spToPx()
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .verticalScroll(state = rememberScrollState())
-        ) {
-            // 首页 banner 轮播
-            HomepageBanner(context = context, gankViewModel = gankViewModel)
-            // 分类
-            Categories(context = context, gankViewModel = gankViewModel)
-        }
+        // 首页 banner 轮播
+        HomepageBanner(context = context)
+        // 分类
+        Categories(context = context)
     }
 }
 
@@ -89,7 +72,7 @@ fun HomepageScreen(
 @Composable
 private fun HomepageBanner(
     context: Context,
-    gankViewModel: GankViewModel
+    gankViewModel: GankViewModel = viewModel()
 ) {
     val homepageBanners = gankViewModel.homepageBanners.collectAsState()
     if (homepageBanners.value.isEmpty()) {
@@ -103,7 +86,7 @@ private fun HomepageBanner(
     }
     Card(
         modifier = Modifier
-            .padding(start = 16.dp, top = 12.dp, end = 16.dp)
+            .padding(start = 16.dp, top = 84.dp, end = 16.dp)
             .fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         backgroundColor = Color.Transparent,
@@ -166,7 +149,7 @@ private fun HomepageBanner(
 @Composable
 private fun Categories(
     context: Context,
-    gankViewModel: GankViewModel
+    gankViewModel: GankViewModel = viewModel()
 ) {
     Column(
         modifier = Modifier
@@ -224,19 +207,22 @@ private fun CategoryItem(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     val cardColor = if (isSystemInDarkTheme()) graySurface else MaterialTheme.colors.background
+                    val coroutineScope = rememberCoroutineScope()
                     Card(
                         elevation = 8.dp,
                         backgroundColor = cardColor,
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .clickable(onClick = {
-                                // 跳转分类列表
-                                CategoryListActivity.start(
-                                    context = context,
-                                    category = category?.name,
-                                    type = item?.type
-                                )
-                            })
+                            .clickable {
+                                coroutineScope.launch {
+                                    // 跳转分类列表
+                                    CategoryListActivity.start(
+                                        context = context,
+                                        category = category?.name,
+                                        type = item?.type
+                                    )
+                                }
+                            }
                     ) {
                         val painter = rememberImagePainter(
                             data = item?.coverImageUrl,

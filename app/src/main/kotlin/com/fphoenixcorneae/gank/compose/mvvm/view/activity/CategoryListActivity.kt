@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
+import com.fphoenixcorneae.ext.spToPx
 import com.fphoenixcorneae.gank.compose.constant.Category
 import com.fphoenixcorneae.gank.compose.mvvm.view.CategoryListScreen
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
@@ -27,12 +28,13 @@ class CategoryListActivity : BaseActivity() {
 
     override fun initView() {
         setRealContent {
-            CategoryListScreen(
-                context = getLocalContext(),
-                gankViewModel = mGankViewModel,
-                title = "$mCategory-$mType",
-                onToolbarClick = onToolbarClick
-            )
+            CategoryListScreen(context = getLocalContext())
+        }
+
+        onToolbarUpdate={
+            // 设置标题栏属性
+            centerText = mType
+            centerTextSize = 20f.spToPx()
         }
     }
 
@@ -53,8 +55,6 @@ class CategoryListActivity : BaseActivity() {
     override fun initData() {
         mGankViewModel.getCategoryList(mCategory, mType)
     }
-
-    override fun toolbarVisible() = false
 
     companion object {
         private const val CATEGORY = "category"

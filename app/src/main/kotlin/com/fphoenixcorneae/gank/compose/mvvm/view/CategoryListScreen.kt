@@ -2,7 +2,6 @@ package com.fphoenixcorneae.gank.compose.mvvm.view
 
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
-import android.view.View
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -10,7 +9,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
@@ -18,7 +16,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,61 +32,47 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ChainStyle
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemsIndexed
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.fphoenixcorneae.ext.isNotNull
 import com.fphoenixcorneae.ext.isNotNullOrEmpty
-import com.fphoenixcorneae.ext.spToPx
-import com.fphoenixcorneae.ext.view.gone
+import com.fphoenixcorneae.ext.isNull
 import com.fphoenixcorneae.gank.compose.R
 import com.fphoenixcorneae.gank.compose.ext.gray0x666666
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryListBean
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
 import com.fphoenixcorneae.jetpackmvvm.compose.theme.typography
-import com.fphoenixcorneae.jetpackmvvm.compose.widget.Toolbar
 import com.fphoenixcorneae.util.ColorUtil
+import kotlinx.coroutines.launch
 
 /**
  * 分类列表
  */
 @Composable
 fun CategoryListScreen(
-    context: Context,
-    gankViewModel: GankViewModel,
-    title: String,
-    onToolbarClick: ((View, Int, CharSequence?) -> Unit)?
+    context: Context
 ) {
-    val titleText = remember { mutableStateOf(title) }
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // 标题栏
-        Toolbar(onToolbarClick = onToolbarClick) {
-            // 设置标题栏属性
-            centerText = titleText.value
-            centerTextSize = 20f.spToPx()
-        }
-
-        CategoryList(
-            context = context,
-            gankViewModel = gankViewModel
-        )
-    }
+    CategoryList(context = context)
 }
 
 @Composable
 private fun CategoryList(
     context: Context,
-    gankViewModel: GankViewModel,
+    gankViewModel: GankViewModel = viewModel(),
 ) {
-    val categoryList = gankViewModel.categoryList.collectAsState()
-    if (categoryList.value.isNullOrEmpty()) {
+    val categoryList = gankViewModel.categoryList?.collectAsLazyPagingItems()
+    if (categoryList.isNull()) {
         return
     }
     LazyColumn(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 68.dp)
     ) {
-        itemsIndexed(items = categoryList.value) { _: Int, item ->
+        itemsIndexed(items = categoryList!!) { _: Int, item ->
             CategoryListItem(categoryListItemData = item)
         }
     }
@@ -219,8 +206,9 @@ private fun IconSection(
             .padding(top = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        val coroutineScope = rememberCoroutineScope()
         Row(modifier = Modifier
-            .clickable {}
+            .clickable { coroutineScope.launch { } }
             .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -238,7 +226,7 @@ private fun IconSection(
             )
         }
         Row(modifier = Modifier
-            .clickable {}
+            .clickable { coroutineScope.launch { } }
             .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -256,7 +244,7 @@ private fun IconSection(
             )
         }
         Row(modifier = Modifier
-            .clickable {}
+            .clickable { coroutineScope.launch { } }
             .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -274,7 +262,7 @@ private fun IconSection(
             )
         }
         Row(modifier = Modifier
-            .clickable {}
+            .clickable { coroutineScope.launch { } }
             .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
