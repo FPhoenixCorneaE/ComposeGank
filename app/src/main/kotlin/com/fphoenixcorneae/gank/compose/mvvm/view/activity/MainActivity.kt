@@ -34,8 +34,8 @@ class MainActivity : BaseActivity() {
 
     override fun initData() {
         mGankViewModel.getHomepageBanners()
-        mGankViewModel.getCategories(Category.Article.name)
-        mGankViewModel.getCategories(Category.GanHuo.name)
-        mGankViewModel.getCategories(Category.Girl.name)
+        mGankViewModel.getCategories(category = Category.Article.name)
+        mGankViewModel.getCategories(category = Category.GanHuo.name)
+        mGankViewModel.getCategories(category = Category.Girl.name)
     }
 }

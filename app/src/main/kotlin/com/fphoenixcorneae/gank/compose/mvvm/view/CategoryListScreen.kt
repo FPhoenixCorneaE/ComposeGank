@@ -29,8 +29,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -46,6 +48,7 @@ import com.fphoenixcorneae.ext.isNull
 import com.fphoenixcorneae.gank.compose.R
 import com.fphoenixcorneae.gank.compose.ext.*
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryListBean
+import com.fphoenixcorneae.gank.compose.mvvm.view.activity.PostDetailActivity
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
 import com.fphoenixcorneae.jetpackmvvm.compose.theme.typography
 import com.fphoenixcorneae.util.ColorUtil
@@ -76,13 +79,20 @@ private fun CategoryList(
             .padding(top = 68.dp)
     ) {
         itemsIndexed(items = categoryList!!) { _: Int, item ->
-            CategoryListItem(categoryListItemData = item)
+            CategoryListItem(context = context, categoryListItemData = item)
+        }
+        item {
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(20.dp)
+            )
         }
     }
 }
 
 @Composable
-private fun CategoryListItem(categoryListItemData: CategoryListBean.Data?) {
+private fun CategoryListItem(context: Context, categoryListItemData: CategoryListBean.Data?) {
     // Scale Animation
     val animatedModifier = run {
         val animatedProgress = remember { Animatable(initialValue = 0.8f) }
@@ -92,14 +102,26 @@ private fun CategoryListItem(categoryListItemData: CategoryListBean.Data?) {
                 animationSpec = tween(300, easing = LinearEasing)
             )
         }
-        Modifier.graphicsLayer(scaleY = animatedProgress.value, scaleX = animatedProgress.value)
+        Modifier
+            .padding(top = 16.dp)
+            .graphicsLayer(scaleY = animatedProgress.value, scaleX = animatedProgress.value)
     }
     Row(modifier = animatedModifier) {
         AuthorImage()
+        val coroutineScope = rememberCoroutineScope()
         Column(
             modifier = Modifier
-                .padding(top = 16.dp, end = 16.dp)
                 .fillMaxWidth()
+                .clickable {
+                    coroutineScope.launch {
+                        // 跳转文章详情
+                        PostDetailActivity.start(
+                            context = context,
+                            postId = categoryListItemData?.id,
+                            title = categoryListItemData?.title
+                        )
+                    }
+                }
         ) {
             AuthorNameAndPublishedTime(
                 authorName = categoryListItemData?.author ?: "",
@@ -108,8 +130,10 @@ private fun CategoryListItem(categoryListItemData: CategoryListBean.Data?) {
             Text(
                 text = categoryListItemData?.desc ?: "",
                 style = typography.body1,
+                maxLines = 4,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
-                    .padding(top = 8.dp)
+                    .padding(start = 16.dp, top = 8.dp, end = 16.dp)
                     .fillMaxWidth()
             )
             Images(images = categoryListItemData?.images)
@@ -118,14 +142,14 @@ private fun CategoryListItem(categoryListItemData: CategoryListBean.Data?) {
                 starCount = categoryListItemData?.stars,
                 likeCount = categoryListItemData?.likeCounts
             )
-            Divider(thickness = 0.5.dp)
+            Divider(thickness = 0.5.dp, modifier = Modifier.padding(horizontal = 16.dp))
         }
     }
 }
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-private fun AuthorImage() {
+fun AuthorImage() {
     val painter = rememberImagePainter(
         data = ColorDrawable(ColorUtil.randomColor),
         builder = { crossfade(true) }
@@ -135,7 +159,7 @@ private fun AuthorImage() {
         contentDescription = null,
         contentScale = ContentScale.Crop,
         modifier = Modifier
-            .padding(16.dp)
+            .padding(start = 16.dp)
             .size(50.dp)
             .clip(CircleShape)
             .border(
@@ -158,11 +182,15 @@ private fun AuthorImage() {
 }
 
 @Composable
-private fun AuthorNameAndPublishedTime(
+fun AuthorNameAndPublishedTime(
     authorName: String,
     publishedAt: String,
 ) {
-    ConstraintLayout(modifier = Modifier.fillMaxWidth()) {
+    ConstraintLayout(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .fillMaxWidth()
+    ) {
         val (author, publishedTime) = createRefs()
         createHorizontalChain(author, publishedTime, chainStyle = ChainStyle.SpreadInside)
         // authorName
@@ -189,7 +217,7 @@ private fun AuthorNameAndPublishedTime(
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-private fun Images(
+fun Images(
     images: List<String?>?
 ) {
     if (images.isNotNullOrEmpty()) {
@@ -206,7 +234,7 @@ private fun Images(
                     painter = painter,
                     contentDescription = null,
                     modifier = Modifier
-                        .padding(top = 8.dp)
+                        .padding(start = 16.dp, top = 8.dp, end = 16.dp)
                         .fillMaxWidth()
                         .height(150.dp)
                         .clip(RoundedCornerShape(8.dp)),
@@ -218,7 +246,7 @@ private fun Images(
 }
 
 @Composable
-private fun IconSection(
+fun IconSection(
     watchCount: Int?,
     starCount: Int?,
     likeCount: Int?,
@@ -226,7 +254,7 @@ private fun IconSection(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp),
+            .padding(start = 16.dp, top = 8.dp, end = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         val coroutineScope = rememberCoroutineScope()
@@ -242,7 +270,7 @@ private fun IconSection(
                 tint = gray0x666666
             )
             Text(
-                text = watchCount.toString(),
+                text = watchCount?.friendlyViewsCount().toString(),
                 modifier = Modifier.padding(start = 8.dp),
                 color = gray0x666666,
                 style = typography.body2
@@ -260,7 +288,7 @@ private fun IconSection(
                 tint = gray0x666666
             )
             Text(
-                text = starCount.toString(),
+                text = starCount?.friendlyViewsCount().toString(),
                 modifier = Modifier.padding(start = 8.dp),
                 color = gray0x666666,
                 style = typography.body2
@@ -278,7 +306,7 @@ private fun IconSection(
                 tint = gray0x666666
             )
             Text(
-                text = likeCount.toString(),
+                text = likeCount?.friendlyViewsCount().toString(),
                 modifier = Modifier.padding(start = 8.dp),
                 color = gray0x666666,
                 style = typography.body2
@@ -304,6 +332,7 @@ private fun IconSection(
 @Composable
 fun PreviewCategoryListItem() {
     CategoryListItem(
+        context = LocalContext.current,
         CategoryListBean.Data(
             author = "24k-小清新",
             publishedAt = "2021-04-14 01:00:26",

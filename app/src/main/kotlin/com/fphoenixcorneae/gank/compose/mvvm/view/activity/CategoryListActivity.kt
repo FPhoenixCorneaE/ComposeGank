@@ -39,7 +39,7 @@ class CategoryListActivity : BaseActivity() {
     }
 
     override fun initData() {
-        mGankViewModel.getCategoryList(mCategory, mType)
+        mGankViewModel.getCategoryList(category = mCategory, type = mType)
     }
 
     companion object {

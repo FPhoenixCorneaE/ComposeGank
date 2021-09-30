@@ -30,5 +30,8 @@
         <activity
             android:name=".mvvm.view.activity.CategoryListActivity"
             android:theme="@style/AppTheme" />
+        <activity
+            android:name=".mvvm.view.activity.PostDetailActivity"
+            android:theme="@style/AppTheme" />
     </application>
 </manifest>

@@ -3,6 +3,7 @@ package com.fphoenixcorneae.gank.compose.network.service
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryBean
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryListBean
 import com.fphoenixcorneae.gank.compose.mvvm.model.HomepageBannersBean
+import com.fphoenixcorneae.gank.compose.mvvm.model.PostDetailBean
 import com.fphoenixcorneae.gank.compose.network.ApiResponse
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -45,4 +46,20 @@ interface GankService {
         @Path("page") page: Int,
         @Path("count") count: Int,
     ): ApiResponse<CategoryListBean>
+
+    /**
+     * 获取文章详情
+     */
+    @GET("/api/v2/post/{postId}")
+    suspend fun getPostDetail(
+        @Path("postId") postId: String
+    ): ApiResponse<PostDetailBean>
+
+    /**
+     * 获取文章评论
+     */
+    @GET("/api/v2/comments/{postId}")
+    suspend fun getPostComments(
+        @Path("postId") postId: String
+    ): ApiResponse<Any?>
 }

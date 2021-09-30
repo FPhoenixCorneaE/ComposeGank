@@ -12,6 +12,7 @@ import com.fphoenixcorneae.gank.compose.ext.request
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryBean
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryListBean
 import com.fphoenixcorneae.gank.compose.mvvm.model.HomepageBannersBean
+import com.fphoenixcorneae.gank.compose.mvvm.model.PostDetailBean
 import com.fphoenixcorneae.gank.compose.network.RetrofitFactory
 import com.fphoenixcorneae.gank.compose.network.service.GankService
 import com.fphoenixcorneae.gank.compose.paging.CategoryListPagingSource
@@ -50,6 +51,10 @@ class GankViewModel : BaseViewModel() {
     private var _categoryList: Flow<PagingData<CategoryListBean.Data>>? = null
     val categoryList
         get() = _categoryList
+
+    /** 文章详情 */
+    private var _postDetail = MutableStateFlow(PostDetailBean())
+    val postDetail = _postDetail.asStateFlow()
 
     /**
      * 获取首页 banner 轮播
@@ -114,5 +119,37 @@ class GankViewModel : BaseViewModel() {
                 }
             )
         }.flow.cachedIn(viewModelScope)
+    }
+
+    /**
+     * 获取文章详情
+     */
+    fun getPostDetail(postId: String) {
+        uiStateViewModel.showLoading()
+        request({
+            mGankService.getPostDetail(postId = postId)
+        }, {
+            _postDetail.value = it
+            uiStateViewModel.showContent()
+        }, {
+            "getPostDetail: errCode: ${it.errCode} errorMsg: ${it.errorMsg}".loge()
+            if (it.errCode == Error.NETWORK_ERROR.getCode() || it.errCode == Error.TIMEOUT_ERROR.getCode()) {
+                uiStateViewModel.showNoNetwork(noNetworkMsg = it.errorMsg)
+            } else {
+                uiStateViewModel.showError(errorMsg = it.errorMsg)
+            }
+        })
+    }
+
+    /**
+     * 获取文章评论
+     */
+    fun getPostComments(postId: String) {
+        request({
+            mGankService.getPostComments(postId = postId)
+        }, {
+        }, {
+            "getPostComments: errCode: ${it.errCode} errorMsg: ${it.errorMsg}".loge()
+        })
     }
 }
