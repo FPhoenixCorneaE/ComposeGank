@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -28,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
@@ -39,10 +41,12 @@ import com.fphoenixcorneae.bannerlayout.widget.BannerLayout
 import com.fphoenixcorneae.bannerlayout.widget.ProgressDrawable
 import com.fphoenixcorneae.ext.dp2px
 import com.fphoenixcorneae.ext.isNotNullOrEmpty
+import com.fphoenixcorneae.gank.compose.R
 import com.fphoenixcorneae.gank.compose.constant.Category
 import com.fphoenixcorneae.gank.compose.ext.gray0x2a2a2a
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryBean
 import com.fphoenixcorneae.gank.compose.mvvm.view.activity.CategoryListActivity
+import com.fphoenixcorneae.gank.compose.mvvm.view.activity.ThisWeekHottestActivity
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
 import com.fphoenixcorneae.jetpackmvvm.compose.theme.typography
 import kotlinx.coroutines.launch
@@ -157,15 +161,15 @@ private fun Categories(
             .wrapContentHeight()
     ) {
         // 文章
-        CategoryTitle(Category.Article.name)
+        CategoryTitle(title = Category.Article.name)
         val article = gankViewModel.articleCategories.collectAsState()
         CategoryItem(context = context, categoryDatas = article.value, category = Category.Article)
         // 干货
-        CategoryTitle(Category.GanHuo.name)
+        CategoryTitle(title = Category.GanHuo.name)
         val ganHuo = gankViewModel.ganHuoCategories.collectAsState()
         CategoryItem(context = context, categoryDatas = ganHuo.value, category = Category.GanHuo)
         // 妹纸
-        CategoryTitle(Category.Girl.name)
+        CategoryTitle(title = Category.Girl.name)
         val girl = gankViewModel.girlCategories.collectAsState()
         CategoryItem(context = context, categoryDatas = girl.value, category = Category.Girl)
         Spacer(modifier = Modifier.height(20.dp))
@@ -176,13 +180,44 @@ private fun Categories(
  * 分类标题
  */
 @Composable
-private fun CategoryTitle(title: String) {
-    Text(
-        text = title,
-        style = typography.h5.copy(fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Cursive),
+private fun CategoryTitle(
+    context: Context = LocalContext.current,
+    title: String
+) {
+    ConstraintLayout(
         modifier = Modifier
-            .padding(start = 16.dp, top = 20.dp)
-    )
+            .padding(top = 20.dp)
+            .fillMaxWidth()
+    ) {
+        val (category, thisWeekHottest) = createRefs()
+        Text(
+            text = title,
+            style = typography.h5.copy(fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Cursive),
+            modifier = Modifier
+                .constrainAs(category) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    start.linkTo(parent.start, margin = 16.dp)
+                }
+        )
+        val coroutineScope = rememberCoroutineScope()
+        Text(
+            text = stringResource(id = R.string.this_week_hottest),
+            style = typography.body2.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Cursive),
+            modifier = Modifier
+                .constrainAs(thisWeekHottest) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(parent.bottom)
+                    end.linkTo(parent.end, margin = 16.dp)
+                }
+                .clickable {
+                    coroutineScope.launch {
+                        // 跳转本周最新
+                        ThisWeekHottestActivity.start(context, title)
+                    }
+                }
+        )
+    }
 }
 
 /**

@@ -3,4 +3,7 @@
     <string name="category_article">专题</string>
     <string name="category_ganhuo">干货</string>
     <string name="category_girl">妹纸</string>
+    <string name="views_count">浏览数</string>
+    <string name="likes_count">点赞数</string>
+    <string name="this_week_hottest">本周最新</string>
 </resources>

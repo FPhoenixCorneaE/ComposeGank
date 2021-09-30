@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +30,7 @@ private fun PostDetail(gankViewModel: GankViewModel = viewModel()) {
     val postDetail = gankViewModel.postDetail.collectAsState().value
     Column(
         modifier = Modifier
+            .verticalScroll(state = rememberScrollState())
             .padding(top = 84.dp)
             .fillMaxWidth()
     ) {

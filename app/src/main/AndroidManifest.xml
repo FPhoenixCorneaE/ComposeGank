@@ -14,24 +14,20 @@
         android:largeHeap="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme.Fullscreen"
+        android:theme="@style/AppTheme"
         tools:ignore="AllowBackup"
         tools:replace="android:theme">
         <activity
             android:name=".mvvm.view.activity.MainActivity"
-            android:exported="true"
-            android:theme="@style/AppTheme">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".mvvm.view.activity.CategoryListActivity"
-            android:theme="@style/AppTheme" />
-        <activity
-            android:name=".mvvm.view.activity.PostDetailActivity"
-            android:theme="@style/AppTheme" />
+        <activity android:name=".mvvm.view.activity.CategoryListActivity" />
+        <activity android:name=".mvvm.view.activity.PostDetailActivity" />
+        <activity android:name=".mvvm.view.activity.ThisWeekHottestActivity" />
     </application>
 </manifest>
