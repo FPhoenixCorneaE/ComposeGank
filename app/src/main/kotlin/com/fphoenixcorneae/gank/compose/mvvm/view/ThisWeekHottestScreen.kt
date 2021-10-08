@@ -1,13 +1,9 @@
 package com.fphoenixcorneae.gank.compose.mvvm.view
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyVerticalGrid
+import android.content.Context
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,24 +11,64 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fphoenixcorneae.gank.compose.R
 import com.fphoenixcorneae.gank.compose.constant.Category
+import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
+import com.fphoenixcorneae.util.ScreenUtil
 
 /**
  * 本周最热
  */
 @Composable
-fun ThisWeekHottestScreen() {
-    Column(modifier = Modifier.padding(top = 68.dp)) {
-        AvailableParams()
+fun ThisWeekHottestScreen(
+    context: Context,
+    category: String,
+    type: String,
+) {
+    ThisWeekHottest(context = context, category = category, type = type)
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun ThisWeekHottest(
+    context: Context,
+    category: String,
+    type: String,
+    gankViewModel: GankViewModel = viewModel(),
+) {
+    val thisWeekHottest = gankViewModel.thisWeekHottest.collectAsState()
+    if (thisWeekHottest.value.isNullOrEmpty()) {
+        return
+    }
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 68.dp)
+    ) {
+        stickyHeader {
+            AvailableParams(category = category, type = type)
+        }
+        itemsIndexed(items = thisWeekHottest.value) { _, item ->
+            CategoryListItem(context = context, categoryListItemData = item)
+        }
+        item {
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(20.dp)
+            )
+        }
     }
 }
 
@@ -41,44 +77,73 @@ fun ThisWeekHottestScreen() {
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun AvailableParams() {
-    val availableCategory = listOf(Category.Article.name, Category.GanHuo.name, Category.Girl.name)
-    val availableType = listOf(stringResource(R.string.views_count), stringResource(R.string.likes_count))
-    Column {
+private fun AvailableParams(
+    category: String,
+    type: String,
+    gankViewModel: GankViewModel = viewModel()
+) {
+    val availableCategory = mutableListOf(Category.Article.name, Category.GanHuo.name, Category.Girl.name)
+    val availableType = mutableListOf(stringResource(R.string.views_count), stringResource(R.string.likes_count))
+    val hotType = mutableListOf("views", "likes")
+    val selectedCategory = remember { mutableStateOf(category) }
+    val selectedType = remember { mutableStateOf(type) }
+    val selectedCategoryIndex = remember { mutableStateOf(availableCategory.indexOf(category)) }
+    val selectedTypeIndex = remember { mutableStateOf(hotType.indexOf(type)) }
+    Column(modifier = Modifier.background(color = Color.White)) {
         // 分类
-        val selectedCategoryIndex = remember { mutableStateOf(0) }
-        LazyVerticalGrid(
-            cells = GridCells.Fixed(availableCategory.size),
-            contentPadding = PaddingValues(horizontal = 8.dp),
+        Row(
+            modifier = Modifier
+                .wrapContentWidth()
+                .padding(horizontal = 8.dp)
+                .horizontalScroll(state = rememberScrollState())
         ) {
-            itemsIndexed(items = availableCategory) { index, title ->
+            repeat(times = availableCategory.size) { index ->
                 ChipCells(
                     selected = index == selectedCategoryIndex.value,
-                    text = title,
+                    text = availableCategory[index],
                     modifier = Modifier
+                        .width(LocalDensity.current.run {
+                            ((ScreenUtil.screenWidth - 16 * availableCategory.size) / availableCategory.size).toDp()
+                        })
                         .padding(start = 8.dp, top = 16.dp, end = 8.dp)
                         .clip(RoundedCornerShape(32.dp))
                         .clickable {
                             selectedCategoryIndex.value = index
+                            selectedCategory.value = availableCategory[index]
+                            gankViewModel.getThisWeekHottest(
+                                hotType = selectedType.value,
+                                category = selectedCategory.value,
+                                showLoading = false
+                            )
                         }
                 )
             }
         }
         // 类型
-        val selectedTypeIndex = remember { mutableStateOf(0) }
-        LazyVerticalGrid(
-            cells = GridCells.Fixed(availableType.size),
-            contentPadding = PaddingValues(horizontal = 8.dp),
+        Row(
+            modifier = Modifier
+                .wrapContentWidth()
+                .padding(horizontal = 8.dp)
+                .horizontalScroll(state = rememberScrollState())
         ) {
-            itemsIndexed(items = availableType) { index, title ->
+            repeat(times = availableType.size) { index ->
                 ChipCells(
                     selected = index == selectedTypeIndex.value,
-                    text = title,
+                    text = availableType[index],
                     modifier = Modifier
-                        .padding(start = 8.dp, top = 8.dp, end = 8.dp)
+                        .width(LocalDensity.current.run {
+                            ((ScreenUtil.screenWidth - 16 * availableCategory.size) / availableCategory.size).toDp()
+                        })
+                        .padding(8.dp)
                         .clip(RoundedCornerShape(32.dp))
                         .clickable {
                             selectedTypeIndex.value = index
+                            selectedType.value = hotType[index]
+                            gankViewModel.getThisWeekHottest(
+                                hotType = selectedType.value,
+                                category = selectedCategory.value,
+                                showLoading = false
+                            )
                         }
                 )
             }

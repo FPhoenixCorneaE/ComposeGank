@@ -20,8 +20,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.HorizontalAlignmentLine
-import androidx.compose.ui.layout.LastBaseline
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -215,19 +213,20 @@ private fun CategoryTitle(
                     // 跳转本周最热
                     ThisWeekHottestActivity.start(context, title)
                 }
-            }
-            .padding(horizontal = 8.dp),
+            },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = stringResource(id = R.string.this_week_hottest),
                 style = typography.body2.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Cursive),
-                modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+                modifier = Modifier.padding(top = 4.dp)
             )
             Image(
                 painter = painterResource(id = R.drawable.ic_hot),
                 contentDescription = null,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier
+                    .size(20.dp)
+                    .padding(start = 4.dp)
             )
         }
     }

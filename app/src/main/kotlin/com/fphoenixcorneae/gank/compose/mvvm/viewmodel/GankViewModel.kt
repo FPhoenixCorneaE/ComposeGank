@@ -56,6 +56,10 @@ class GankViewModel : BaseViewModel() {
     private var _postDetail = MutableStateFlow(PostDetailBean())
     val postDetail = _postDetail.asStateFlow()
 
+    /** 本周最热 */
+    private val _thisWeekHottest = MutableStateFlow(mutableListOf<CategoryListBean.Data?>())
+    val thisWeekHottest = _thisWeekHottest.asStateFlow()
+
     /**
      * 获取首页 banner 轮播
      */
@@ -150,6 +154,28 @@ class GankViewModel : BaseViewModel() {
         }, {
         }, {
             "getPostComments: errCode: ${it.errCode} errorMsg: ${it.errorMsg}".loge()
+        })
+    }
+
+    /**
+     * 获取本周最热
+     */
+    fun getThisWeekHottest(hotType: String, category: String, count: Int = 20, showLoading: Boolean = true) {
+        if (showLoading) {
+            uiStateViewModel.showLoading()
+        }
+        request({
+            mGankService.getThisWeekHottest(hotType = hotType, category = category, count = count)
+        }, {
+            _thisWeekHottest.value = it.toMutableList()
+            uiStateViewModel.showContent()
+        }, {
+            "getThisWeekHottest: errCode: ${it.errCode} errorMsg: ${it.errorMsg}".loge()
+            if (it.errCode == Error.NETWORK_ERROR.getCode() || it.errCode == Error.TIMEOUT_ERROR.getCode()) {
+                uiStateViewModel.showNoNetwork(noNetworkMsg = it.errorMsg)
+            } else {
+                uiStateViewModel.showError(errorMsg = it.errorMsg)
+            }
         })
     }
 }

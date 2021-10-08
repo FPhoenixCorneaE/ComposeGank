@@ -78,7 +78,7 @@ private fun CategoryList(
             .fillMaxSize()
             .padding(top = 68.dp)
     ) {
-        itemsIndexed(items = categoryList!!) { _: Int, item ->
+        itemsIndexed(items = categoryList!!) { _, item ->
             CategoryListItem(context = context, categoryListItemData = item)
         }
         item {
@@ -92,7 +92,7 @@ private fun CategoryList(
 }
 
 @Composable
-private fun CategoryListItem(context: Context, categoryListItemData: CategoryListBean.Data?) {
+fun CategoryListItem(context: Context, categoryListItemData: CategoryListBean.Data?) {
     // Scale Animation
     val animatedModifier = run {
         val animatedProgress = remember { Animatable(initialValue = 0.8f) }

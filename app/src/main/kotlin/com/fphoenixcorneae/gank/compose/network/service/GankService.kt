@@ -62,4 +62,14 @@ interface GankService {
     suspend fun getPostComments(
         @Path("postId") postId: String
     ): ApiResponse<Any?>
+
+    /**
+     * 获取本周最热
+     */
+    @GET("/api/v2/hot/{hotType}/category/{category}/count/{count}")
+    suspend fun getThisWeekHottest(
+        @Path("hotType") hotType: String,
+        @Path("category") category: String,
+        @Path("count") count: Int,
+    ): ApiResponse<CategoryListBean>
 }
