@@ -4,16 +4,15 @@ import android.content.Context
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -26,6 +25,7 @@ import com.fphoenixcorneae.gank.compose.R
 import com.fphoenixcorneae.gank.compose.constant.Category
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
 import com.fphoenixcorneae.util.ScreenUtil
+import kotlinx.coroutines.launch
 
 /**
  * 本周最热
@@ -51,13 +51,15 @@ private fun ThisWeekHottest(
     if (thisWeekHottest.value.isNullOrEmpty()) {
         return
     }
+    val state = rememberLazyListState()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 68.dp)
+            .padding(top = 68.dp),
+        state = state,
     ) {
         stickyHeader {
-            AvailableParams(category = category, type = type)
+            AvailableParams(category = category, type = type, state)
         }
         itemsIndexed(items = thisWeekHottest.value) { _, item ->
             CategoryListItem(context = context, categoryListItemData = item)
@@ -80,6 +82,7 @@ private fun ThisWeekHottest(
 private fun AvailableParams(
     category: String,
     type: String,
+    state: LazyListState,
     gankViewModel: GankViewModel = viewModel()
 ) {
     val availableCategory = mutableListOf(Category.Article.name, Category.GanHuo.name, Category.Girl.name)
@@ -89,6 +92,8 @@ private fun AvailableParams(
     val selectedType = remember { mutableStateOf(type) }
     val selectedCategoryIndex = remember { mutableStateOf(availableCategory.indexOf(category)) }
     val selectedTypeIndex = remember { mutableStateOf(hotType.indexOf(type)) }
+
+    val coroutineScope = rememberCoroutineScope()
     Column(modifier = Modifier.background(color = Color.White)) {
         // 分类
         Row(
@@ -115,6 +120,10 @@ private fun AvailableParams(
                                 category = selectedCategory.value,
                                 showLoading = false
                             )
+                            // scroll to top
+                            coroutineScope.launch {
+                                state.scrollToItem(index = 0)
+                            }
                         }
                 )
             }
@@ -144,6 +153,10 @@ private fun AvailableParams(
                                 category = selectedCategory.value,
                                 showLoading = false
                             )
+                            // scroll to top
+                            coroutineScope.launch {
+                                state.scrollToItem(index = 0)
+                            }
                         }
                 )
             }
