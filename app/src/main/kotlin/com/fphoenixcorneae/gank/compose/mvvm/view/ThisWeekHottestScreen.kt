@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
@@ -17,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -47,36 +49,38 @@ private fun AvailableParams() {
         val selectedCategoryIndex = remember { mutableStateOf(0) }
         LazyVerticalGrid(
             cells = GridCells.Fixed(availableCategory.size),
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            modifier = Modifier.padding(top = 16.dp)
+            contentPadding = PaddingValues(horizontal = 8.dp),
         ) {
             itemsIndexed(items = availableCategory) { index, title ->
                 ChipCells(
                     selected = index == selectedCategoryIndex.value,
                     text = title,
                     modifier = Modifier
-                        .padding(8.dp)
+                        .padding(start = 8.dp, top = 16.dp, end = 8.dp)
+                        .clip(RoundedCornerShape(32.dp))
                         .clickable {
                             selectedCategoryIndex.value = index
-                        })
+                        }
+                )
             }
         }
         // 类型
         val selectedTypeIndex = remember { mutableStateOf(0) }
         LazyVerticalGrid(
             cells = GridCells.Fixed(availableType.size),
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            modifier = Modifier.padding(top = 16.dp)
+            contentPadding = PaddingValues(horizontal = 8.dp),
         ) {
             itemsIndexed(items = availableType) { index, title ->
                 ChipCells(
                     selected = index == selectedTypeIndex.value,
                     text = title,
                     modifier = Modifier
-                        .padding(8.dp)
+                        .padding(start = 8.dp, top = 8.dp, end = 8.dp)
+                        .clip(RoundedCornerShape(32.dp))
                         .clickable {
                             selectedTypeIndex.value = index
-                        })
+                        }
+                )
             }
         }
     }
