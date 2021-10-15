@@ -93,6 +93,14 @@ object Deps {
      */
     object ThirdParty {
         const val mmkv = "com.tencent:mmkv-static:1.2.9"
+
+        /**
+         * 腾讯 Bugly 异常上报
+         */
+        object Bugly {
+            const val crashReport = "com.tencent.bugly:crashreport:3.4.4"
+            const val nativeCrashReport = "com.tencent.bugly:nativecrashreport:3.9.2"
+        }
     }
 
     /**

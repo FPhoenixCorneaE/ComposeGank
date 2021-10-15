@@ -3,8 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.fphoenixcorneae.gank.compose">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-
     <application
         android:name=".application.GankApp"
         android:allowBackup="true"

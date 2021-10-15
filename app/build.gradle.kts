@@ -16,12 +16,20 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true
         ndk {
-            // 设置支持的SO库架构
-            abiFilters.addAll(listOf("armeabi-v7a", "x86"))  //'armeabi', 'x86', 'armeabi-v7a', 'x86_64', 'arm64-v8a'
+            // 设置支持的SO库架构(添加 "x86" 架构是为了能安装到模拟器)
+            // "armeabi", "x86", "armeabi-v7a", "x86_64", "arm64-v8a"
+            abiFilters.addAll(listOf("armeabi-v7a", "x86"))
         }
     }
 
     buildTypes {
+        getByName(Deps.BuildType.Debug) {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
         getByName(Deps.BuildType.Release) {
             isMinifyEnabled = false
             proguardFiles(
@@ -61,6 +69,7 @@ android {
 
     configurations.all {
         resolutionStrategy {
+            // 强制指定版本
             force(Deps.Kotlin.stdlib)
         }
     }
@@ -92,8 +101,10 @@ dependencies {
     addAndroidXDependencies()
     // FPhoenixCorneaE
     addFPhoenixCorneaEDependencies()
-    // compose
+    // ComposeOfficial
     addComposeOfficialDependencies()
+    // ThirdParty
+    addThirdPartyDependencies()
     // Debug
     addDebugDependencies()
     // Test
