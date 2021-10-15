@@ -1,19 +1,17 @@
 package com.fphoenixcorneae.gank.compose.mvvm.view
 
+import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -21,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -30,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.annotation.ExperimentalCoilApi
@@ -42,6 +42,8 @@ import com.fphoenixcorneae.bannerlayout.widget.BannerLayout
 import com.fphoenixcorneae.bannerlayout.widget.ProgressDrawable
 import com.fphoenixcorneae.ext.dp2px
 import com.fphoenixcorneae.ext.isNotNullOrEmpty
+import com.fphoenixcorneae.ext.screenHeight
+import com.fphoenixcorneae.ext.screenWidth
 import com.fphoenixcorneae.gank.compose.R
 import com.fphoenixcorneae.gank.compose.constant.Category
 import com.fphoenixcorneae.gank.compose.ext.gray0x2a2a2a
@@ -50,6 +52,7 @@ import com.fphoenixcorneae.gank.compose.mvvm.view.activity.CategoryListActivity
 import com.fphoenixcorneae.gank.compose.mvvm.view.activity.ThisWeekHottestActivity
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
 import com.fphoenixcorneae.jetpackmvvm.compose.theme.typography
+import com.fphoenixcorneae.util.ScreenUtil
 import kotlinx.coroutines.launch
 
 /**
@@ -68,6 +71,64 @@ fun HomepageScreen(
         HomepageBanner(context = context)
         // 分类
         Categories(context = context)
+    }
+
+    val coroutineScope = rememberCoroutineScope()
+    // 搜索按钮
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .zIndex(1f)
+            .padding(top = LocalDensity.current.run {
+                ScreenUtil
+                    .getStatusBarHeight(context as Activity)
+                    .toDp()
+            })
+    ) {
+        // 揭露动画效果
+        val circularReveal = remember { mutableStateOf(false) }
+        val size by animateIntAsState(
+            targetValue = if (circularReveal.value) {
+                context.screenWidth.coerceAtLeast(context.screenHeight)
+            } else {
+                44
+            },
+            animationSpec = tween(durationMillis = 2_000)
+        )
+        val percent by animateIntAsState(
+            targetValue = if (circularReveal.value) {
+                0
+            } else {
+                50
+            },
+            animationSpec = tween(durationMillis = 1_000)
+        )
+        Surface(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .size(size.dp)
+                .clip(RoundedCornerShape(percent))
+                .background(Color.White)
+        ) {
+            if (circularReveal.value.not()) {
+                IconButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            circularReveal.value = circularReveal.value.not()
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(end = 8.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_search),
+                        contentDescription = null,
+                        tint = Color.Black,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -217,9 +278,13 @@ private fun CategoryTitle(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = stringResource(id = R.string.this_week_hottest),
-                style = typography.body2.copy(fontWeight = FontWeight.Bold, fontFamily = FontFamily.Cursive),
-                modifier = Modifier.padding(top = 4.dp)
+                text = stringResource(id = R.string.hot),
+                style = typography.h6.copy(
+                    color = Color.Red,
+                    fontWeight = FontWeight.Thin,
+                    fontFamily = FontFamily.Cursive
+                ),
+                modifier = Modifier.padding(top = 0.dp)
             )
             Image(
                 painter = painterResource(id = R.drawable.ic_hot),

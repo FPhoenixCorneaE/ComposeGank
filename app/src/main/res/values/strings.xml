@@ -6,4 +6,5 @@
     <string name="views_count">浏览数</string>
     <string name="likes_count">点赞数</string>
     <string name="this_week_hottest">本周最热</string>
+    <string name="hot">Hot</string>
 </resources>

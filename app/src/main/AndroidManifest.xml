@@ -29,5 +29,6 @@
         <activity android:name=".mvvm.view.activity.CategoryListActivity" />
         <activity android:name=".mvvm.view.activity.PostDetailActivity" />
         <activity android:name=".mvvm.view.activity.ThisWeekHottestActivity" />
+        <activity android:name=".mvvm.view.activity.SearchActivity" />
     </application>
 </manifest>
