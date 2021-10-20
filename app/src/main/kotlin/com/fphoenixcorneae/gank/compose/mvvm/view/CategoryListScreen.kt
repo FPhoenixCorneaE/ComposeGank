@@ -2,6 +2,7 @@ package com.fphoenixcorneae.gank.compose.mvvm.view
 
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
+import android.os.Bundle
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
@@ -45,7 +46,9 @@ import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.fphoenixcorneae.ext.isNotNullOrEmpty
 import com.fphoenixcorneae.ext.isNull
+import com.fphoenixcorneae.ext.startKtxActivity
 import com.fphoenixcorneae.gank.compose.R
+import com.fphoenixcorneae.gank.compose.constant.Constant
 import com.fphoenixcorneae.gank.compose.ext.*
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryListBean
 import com.fphoenixcorneae.gank.compose.mvvm.view.activity.PostDetailActivity
@@ -115,10 +118,12 @@ fun CategoryListItem(context: Context, categoryListItemData: CategoryListBean.Da
                 .clickable {
                     coroutineScope.launch {
                         // 跳转文章详情
-                        PostDetailActivity.start(
-                            context = context,
-                            postId = categoryListItemData?.id,
-                            title = categoryListItemData?.title
+                        context.startKtxActivity<PostDetailActivity>(
+                            extra = Bundle().apply {
+                                putString(Constant.POST_ID, categoryListItemData?.id)
+                                putString(Constant.TITLE, categoryListItemData?.title)
+                            },
+                            value = null
                         )
                     }
                 }

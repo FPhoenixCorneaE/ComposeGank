@@ -1,8 +1,8 @@
 package com.fphoenixcorneae.gank.compose.mvvm.view
 
-import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Bundle
 import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -40,19 +40,18 @@ import com.fphoenixcorneae.bannerlayout.imagemanager.GlideImageManager
 import com.fphoenixcorneae.bannerlayout.listener.BannerModelCallBack
 import com.fphoenixcorneae.bannerlayout.widget.BannerLayout
 import com.fphoenixcorneae.bannerlayout.widget.ProgressDrawable
-import com.fphoenixcorneae.ext.dp2px
-import com.fphoenixcorneae.ext.isNotNullOrEmpty
-import com.fphoenixcorneae.ext.screenHeight
-import com.fphoenixcorneae.ext.screenWidth
+import com.fphoenixcorneae.ext.*
 import com.fphoenixcorneae.gank.compose.R
 import com.fphoenixcorneae.gank.compose.constant.Category
+import com.fphoenixcorneae.gank.compose.constant.Constant
 import com.fphoenixcorneae.gank.compose.ext.gray0x2a2a2a
 import com.fphoenixcorneae.gank.compose.mvvm.model.CategoryBean
 import com.fphoenixcorneae.gank.compose.mvvm.view.activity.CategoryListActivity
+import com.fphoenixcorneae.gank.compose.mvvm.view.activity.SearchActivity
 import com.fphoenixcorneae.gank.compose.mvvm.view.activity.ThisWeekHottestActivity
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
 import com.fphoenixcorneae.jetpackmvvm.compose.theme.typography
-import com.fphoenixcorneae.util.ScreenUtil
+import com.fphoenixcorneae.util.statusbar.StatusBarUtil
 import kotlinx.coroutines.launch
 
 /**
@@ -80,15 +79,15 @@ fun HomepageScreen(
             .fillMaxWidth()
             .zIndex(1f)
             .padding(top = LocalDensity.current.run {
-                ScreenUtil
-                    .getStatusBarHeight(context as Activity)
+                StatusBarUtil
+                    .getStatusBarHeight(context)
                     .toDp()
             })
     ) {
         // 揭露动画效果
-        val circularReveal = remember { mutableStateOf(false) }
+        var circularReveal by remember { mutableStateOf(false) }
         val size by animateIntAsState(
-            targetValue = if (circularReveal.value) {
+            targetValue = if (circularReveal) {
                 context.screenWidth.coerceAtLeast(context.screenHeight)
             } else {
                 44
@@ -96,7 +95,7 @@ fun HomepageScreen(
             animationSpec = tween(durationMillis = 2_000)
         )
         val percent by animateIntAsState(
-            targetValue = if (circularReveal.value) {
+            targetValue = if (circularReveal) {
                 0
             } else {
                 50
@@ -110,11 +109,13 @@ fun HomepageScreen(
                 .clip(RoundedCornerShape(percent))
                 .background(Color.White)
         ) {
-            if (circularReveal.value.not()) {
+            if (!circularReveal) {
                 IconButton(
                     onClick = {
                         coroutineScope.launch {
-                            circularReveal.value = circularReveal.value.not()
+                            circularReveal = !circularReveal
+                            context.startKtxActivity<SearchActivity>(value = null)
+                            circularReveal = !circularReveal
                         }
                     },
                     modifier = Modifier
@@ -272,7 +273,12 @@ private fun CategoryTitle(
             .clickable {
                 coroutineScope.launch {
                     // 跳转本周最热
-                    ThisWeekHottestActivity.start(context, title)
+                    context.startKtxActivity<ThisWeekHottestActivity>(
+                        extra = Bundle().apply {
+                            putString(Constant.CATEGORY, title)
+                        },
+                        value = null
+                    )
                 }
             },
             verticalAlignment = Alignment.CenterVertically
@@ -328,10 +334,12 @@ private fun CategoryItem(
                             .clickable {
                                 coroutineScope.launch {
                                     // 跳转分类列表
-                                    CategoryListActivity.start(
-                                        context = context,
-                                        category = category?.name,
-                                        type = item?.type
+                                    context.startKtxActivity<CategoryListActivity>(
+                                        extra = Bundle().apply {
+                                            putString(Constant.CATEGORY, category?.name)
+                                            putString(Constant.TYPE, item?.type)
+                                        },
+                                        value = null
                                     )
                                 }
                             }
