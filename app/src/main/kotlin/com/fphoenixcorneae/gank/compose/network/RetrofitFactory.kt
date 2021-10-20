@@ -1,9 +1,9 @@
 package com.fphoenixcorneae.gank.compose.network
 
+import android.annotation.SuppressLint
 import com.fphoenixcorneae.coretrofit.factory.CoroutineCallAdapterFactory
 import com.fphoenixcorneae.coretrofit.interceptor.CommonParamsInterceptor
 import com.fphoenixcorneae.coretrofit.interceptor.HeaderInterceptor
-import com.fphoenixcorneae.coretrofit.interceptor.HttpLoggingInterceptor
 import com.fphoenixcorneae.gank.compose.network.interceptor.logging.LogInterceptor
 import com.fphoenixcorneae.util.ContextUtil
 import com.franmontiel.persistentcookiejar.PersistentCookieJar
@@ -17,7 +17,13 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 /**
  * @desc：RetrofitHelper
@@ -76,10 +82,46 @@ object RetrofitFactory {
         cache(Cache(File(ContextUtil.context.cacheDir, NET_CACHE_DIR), NET_CACHE_MAX_SIZE))
         // 添加 Cookies 自动持久化
         cookieJar(mCookieJar)
+        // 信任所有证书,不安全有风险
+        val trustManager = createTrustManager()
+        val sslSocketFactory = createSSLSocketFactory(arrayOf(trustManager))
+        sslSocketFactory?.let {
+            sslSocketFactory(it, trustManager)
+        }
+        hostnameVerifier { _, _ -> true }
         // 超时时间 连接、读、写
         connectTimeout(TIMEOUT_CONNECT, TimeUnit.SECONDS)
         readTimeout(TIMEOUT_READ, TimeUnit.SECONDS)
         writeTimeout(TIMEOUT_WRITE, TimeUnit.SECONDS)
+    }
+
+    private fun createTrustManager() = kotlin.run {
+        @SuppressLint("CustomX509TrustManager")
+        object : X509TrustManager {
+            @SuppressLint("TrustAllX509TrustManager")
+            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+            }
+
+            @SuppressLint("TrustAllX509TrustManager")
+            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+            }
+
+            override fun getAcceptedIssuers(): Array<X509Certificate> {
+                return arrayOf()
+            }
+        }
+    }
+
+    private fun createSSLSocketFactory(tm: Array<TrustManager>) = kotlin.run {
+        var sslSocketFactory: SSLSocketFactory? = null
+        try {
+            val sslContext = SSLContext.getInstance("TLS")
+            sslContext.init(null, tm, SecureRandom())
+            sslSocketFactory = sslContext.socketFactory
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        sslSocketFactory
     }
 
     /**
