@@ -52,6 +52,7 @@ import com.fphoenixcorneae.gank.compose.mvvm.view.activity.ThisWeekHottestActivi
 import com.fphoenixcorneae.gank.compose.mvvm.viewmodel.GankViewModel
 import com.fphoenixcorneae.jetpackmvvm.compose.theme.typography
 import com.fphoenixcorneae.util.statusbar.StatusBarUtil
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
@@ -86,13 +87,14 @@ fun HomepageScreen(
     ) {
         // 揭露动画效果
         var circularReveal by remember { mutableStateOf(false) }
+        val durationMillis = 2_000
         val size by animateIntAsState(
             targetValue = if (circularReveal) {
                 context.screenWidth.coerceAtLeast(context.screenHeight)
             } else {
                 44
             },
-            animationSpec = tween(durationMillis = 2_000)
+            animationSpec = tween(durationMillis = durationMillis)
         )
         val percent by animateIntAsState(
             targetValue = if (circularReveal) {
@@ -100,7 +102,7 @@ fun HomepageScreen(
             } else {
                 50
             },
-            animationSpec = tween(durationMillis = 1_000)
+            animationSpec = tween(durationMillis = durationMillis / 2)
         )
         Surface(
             modifier = Modifier
@@ -114,7 +116,9 @@ fun HomepageScreen(
                     onClick = {
                         coroutineScope.launch {
                             circularReveal = !circularReveal
+                            delay(timeMillis = durationMillis / 2L)
                             context.startKtxActivity<SearchActivity>(value = null)
+                            delay(timeMillis = 400)
                             circularReveal = !circularReveal
                         }
                     },
